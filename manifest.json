@@ -1,0 +1,8 @@
+{"name": "Twitter Scrapper",
+  "version": "1.0",
+  "description":"Social Street Smart!",
+  "manifest_version": 2,
+  "content_scripts": [{"matches": ["https://twitter.com/*"], "js": ["js/content.js"]}],
+  "browser_action": {"default_title": "Twitter Scrapper", "default_popup": "popup.html"},
+  "permissions": ["tabs", "activeTab", "https://twitter.com/*"]
+}
