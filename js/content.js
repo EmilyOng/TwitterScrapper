@@ -1,5 +1,6 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
   if (msg.text == "report_back"){
+    var url = msg.url;
     var text = document.getElementsByClassName("js-tweet-text"); // get tweet content
     var tweet = document.getElementsByClassName("tweet");
     var date = document.getElementsByClassName("_timestamp"); // get tweet date-time
@@ -7,12 +8,12 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
     var size = text.length;
     var dataStorage = [];
     var sendData = false;
-    chrome.storage.sync.get(["TwitterScrapper"], function (result) {
-      if (result.TwitterScrapper == undefined) {
+    chrome.storage.sync.get([url], function (result) {
+      if (result[url] == undefined) {
         dataStorage = [];
       }
       else {
-        dataStorage = JSON.parse(result.TwitterScrapper);
+        dataStorage = JSON.parse(result[url]);
       }
       console.log("Traversing tweets");
       for (var i=0; i<size; i++){
@@ -29,7 +30,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
           data.push(curr);
         }
       }
-      chrome.storage.sync.set({"TwitterScrapper": JSON.stringify(dataStorage)}, function () {
+      chrome.storage.sync.set({[url]: JSON.stringify(dataStorage)}, function () {
         console.log("Updating storage");
         sendData = true;
       });
@@ -40,7 +41,6 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
         window.setTimeout(awaitData, 100);
       }
       else {
-        console.log(data);
         sendResponse(data);
       }
     }
