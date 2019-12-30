@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
   }
 
   /* Respond to messages */
-  if (msg.text == "start_observer") {
+  if (msg.text == "observe") {
     var tweets_url = msg.url + "_TwitterScrapper_Tweets";
     chrome.storage.sync.get([tweets_url], function (result) {
       if (result[tweets_url] == undefined) {

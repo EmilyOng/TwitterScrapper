@@ -40,7 +40,7 @@ function mutationHandler () {
     currentWindow: true
   }, function (tabs) {
     var currentTab = tabs[0];
-    chrome.tabs.sendMessage(currentTab.id, {text: "start_observer", url: currentTab.url});
+    chrome.tabs.sendMessage(currentTab.id, {text: "observe", url: currentTab.url});
   });
 }
 
