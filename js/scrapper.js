@@ -25,6 +25,7 @@ function getDOMInfo (DOMContent) {
 }
 
 function preFill (url) {
+  url += "_TwitterScrapper_Tweets";
   chrome.storage.sync.get([url], function (result) {
     if (result[url]) {
       var data = JSON.parse(result[url]);
@@ -33,7 +34,18 @@ function preFill (url) {
   });
 }
 
+function mutationHandler () {
+  chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  }, function (tabs) {
+    var currentTab = tabs[0];
+    chrome.tabs.sendMessage(currentTab.id, {text: "start_observer", url: currentTab.url});
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  mutationHandler();
   var getData = document.querySelector("#getData");
   chrome.tabs.query({
     active: true,
@@ -42,13 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
     var currentTab = tabs[0];
     preFill(currentTab.url);
   });
-  getData.addEventListener("click", () => {
-    chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    }, function (tabs) {
-      var currentTab = tabs[0];
-      chrome.tabs.sendMessage(currentTab.id, {text: "report_back", url: currentTab.url}, getDOMInfo);
-    });
-  })
+  // getData.addEventListener("click", () => {
+  //   chrome.tabs.query({
+  //     active: true,
+  //     currentWindow: true
+  //   }, function (tabs) {
+  //     var currentTab = tabs[0];
+  //     chrome.tabs.sendMessage(currentTab.id, {text: "report_back", url: currentTab.url}, getDOMInfo);
+  //   });
+  // });
 });

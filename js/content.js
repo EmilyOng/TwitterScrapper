@@ -1,6 +1,6 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
-  if (msg.text == "report_back"){
-    var url = msg.url;
+  /* Get Data */
+  function getData (url) {
     var text = document.getElementsByClassName("js-tweet-text"); // get tweet content
     var tweet = document.getElementsByClassName("tweet");
     var date = document.getElementsByClassName("_timestamp"); // get tweet date-time
@@ -45,6 +45,38 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
       }
     }
     awaitData();
+  }
+
+  /* Respond to messages */
+  if (msg.text == "start_observer") {
+    var tweets_url = msg.url + "_TwitterScrapper_Tweets";
+    chrome.storage.sync.get([tweets_url], function (result) {
+      if (result[tweets_url] == undefined) {
+        getData(tweets_url);
+      }
+      else {
+        console.log("Waiting for changes");
+        var target = document.querySelectorAll(".ProfileNav-stat");
+        var node, tweet_count;
+        for (var i=0; i<target.length; i++) {
+          if (target[i].getAttribute("data-nav") == "tweets") {
+            tweet_count = target[i].getAttribute("data-original-title");
+            node = target[i];
+            break;
+          }
+        }
+        const config = {attributes: true};
+        const callback = function (mutationList, observer) {
+          if (mutationList.length > 0) {
+            // Changes in the number of tweets
+            console.log("Mutation detected");
+            getData(tweets_url);
+          }
+        }
+        const observer = new MutationObserver(callback);
+        observer.observe(node, config);
+      }
+    });
   }
   return true;
 });
