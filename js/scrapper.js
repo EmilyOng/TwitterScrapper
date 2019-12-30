@@ -46,21 +46,12 @@ function mutationHandler () {
 
 document.addEventListener("DOMContentLoaded", () => {
   mutationHandler();
-  var getData = document.querySelector("#getData");
   chrome.tabs.query({
     active: true,
     currentWindow: true
   }, function (tabs) {
     var currentTab = tabs[0];
+    document.getElementById("pageDescription").textContent += currentTab.url;
     preFill(currentTab.url);
   });
-  // getData.addEventListener("click", () => {
-  //   chrome.tabs.query({
-  //     active: true,
-  //     currentWindow: true
-  //   }, function (tabs) {
-  //     var currentTab = tabs[0];
-  //     chrome.tabs.sendMessage(currentTab.id, {text: "report_back", url: currentTab.url}, getDOMInfo);
-  //   });
-  // });
 });
