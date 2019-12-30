@@ -50,21 +50,26 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
   /* Respond to messages */
   if (msg.text == "observe") {
     var tweets_url = msg.url + "_TwitterScrapper_Tweets";
-    chrome.storage.sync.get([tweets_url], function (result) {
-      if (result[tweets_url] == undefined) {
-        getData(tweets_url);
+    var storage_url = msg.url + "_TwitterScrapper_Count";
+    var target = document.querySelectorAll(".ProfileNav-stat");
+    var node, tweet_count;
+    for (var i=0; i<target.length; i++) {
+      if (target[i].getAttribute("data-nav") == "tweets") {
+        tweet_count = target[i].getAttribute("title");
+        node = target[i];
+        break;
+      }
+    }
+
+    chrome.storage.sync.get([tweets_url, storage_url], function (result) {
+      if ((result[tweets_url] == undefined) ||
+          (result[storage_url] != undefined && result[storage_url] != tweet_count)) {
+        chrome.storage.sync.set({[storage_url]: tweet_count}, function () {
+          getData(tweets_url);
+        });
       }
       else {
         console.log("Waiting for changes");
-        var target = document.querySelectorAll(".ProfileNav-stat");
-        var node, tweet_count;
-        for (var i=0; i<target.length; i++) {
-          if (target[i].getAttribute("data-nav") == "tweets") {
-            tweet_count = target[i].getAttribute("data-original-title");
-            node = target[i];
-            break;
-          }
-        }
         const config = {attributes: true};
         const callback = function (mutationList, observer) {
           if (mutationList.length > 0) {
