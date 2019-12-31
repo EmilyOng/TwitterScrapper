@@ -1,14 +1,13 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
   /* Get Data */
   function getData (url) {
-    var text = document.getElementsByClassName("js-tweet-text"); // get tweet content
     var tweet = document.getElementsByClassName("tweet");
     var date = document.getElementsByClassName("_timestamp"); // get tweet date-time
     var data = [];
-    var size = text.length;
+    var size = tweet.length;
     var dataStorage = [];
     var sendData = false;
-    chrome.storage.sync.get([url], function (result) {
+    chrome.storage.local.get([url], function (result) {
       if (result[url] == undefined) {
         dataStorage = [];
       }
@@ -19,8 +18,18 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
       for (var i=0; i<size; i++){
         var author = tweet[i].getAttribute("data-name"); // get tweet author
         var username = tweet[i].getAttribute("data-screen-name"); // get tweet handle
-        var id = tweet[i].getAttribute("data-user-id"); // get tweet id
-        var curr = {"text": text[i].textContent,
+        var id = tweet[i].getAttribute("data-tweet-id"); // get tweet id
+        var text = tweet[i].querySelectorAll(".tweet-text");
+        text = Array.from(text);
+        var original = text[0].textContent, quoted = "";
+        try {
+          quoted = text[1].textContent;
+        } catch (e) {
+
+        } finally {
+        }
+        var curr = {"original": original,
+                    "quoted": quoted,
                     "date": date[i].textContent,
                     "author": author,
                     "username": username,
@@ -30,7 +39,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
           data.push(curr);
         }
       }
-      chrome.storage.sync.set({[url]: JSON.stringify(dataStorage)}, function () {
+      chrome.storage.local.set({[url]: JSON.stringify(dataStorage)}, function () {
         console.log("Updating storage");
         sendData = true;
       });
@@ -38,9 +47,10 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
     function awaitData () {
       if (!sendData) {
         console.log("Waiting for data");
-        window.setTimeout(awaitData, 100);
+        setInterval(awaitData, 100);
       }
       else {
+        clearInterval(awaitData);
         sendResponse(data);
       }
     }
@@ -48,29 +58,16 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
   }
 
   /* Respond to messages */
+  var tweets_url = msg.url + "_TwitterScrapper_Tweets";
   if (msg.text == "observe") {
-    var tweets_url = msg.url + "_TwitterScrapper_Tweets";
-    var storage_url = msg.url + "_TwitterScrapper_Count";
-    var target = document.querySelectorAll(".ProfileNav-stat");
-    var node, tweet_count;
-    for (var i=0; i<target.length; i++) {
-      if (target[i].getAttribute("data-nav") == "tweets") {
-        tweet_count = target[i].getAttribute("title");
-        node = target[i];
-        break;
-      }
-    }
-
-    chrome.storage.sync.get([tweets_url, storage_url], function (result) {
-      if ((result[tweets_url] == undefined) ||
-          (result[storage_url] != undefined && result[storage_url] != tweet_count)) {
-        chrome.storage.sync.set({[storage_url]: tweet_count}, function () {
-          getData(tweets_url);
-        });
+    var target = document.getElementById("stream-items-id");
+    chrome.storage.local.get([tweets_url], function (result) {
+      if (result[tweets_url] == undefined) {
+        getData(tweets_url);
       }
       else {
         console.log("Waiting for changes");
-        const config = {attributes: true};
+        const config = {childList: true};
         const callback = function (mutationList, observer) {
           if (mutationList.length > 0) {
             // Changes in the number of tweets
@@ -79,7 +76,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
           }
         }
         const observer = new MutationObserver(callback);
-        observer.observe(node, config);
+        observer.observe(target, config);
       }
     });
   }
