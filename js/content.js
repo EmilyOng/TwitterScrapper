@@ -1,8 +1,17 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
+  function removeElement(arr, value) {
+    // https://love2dev.com/blog/javascript-remove-from-array/
+     return arr.filter(function(ele){
+         return ele != value;
+     });
+  }
+
+  /* Set Profile */
   function setProfile (elem) {
     var author = elem.getAttribute("data-name"); // get tweet author
     var username = elem.getAttribute("data-screen-name"); // get tweet handle
     var id = elem.getAttribute("data-tweet-id"); // get tweet id
+    var date = elem.children[1].children[0].children[1].children[0].getAttribute("title"); // get tweet date
     var text = elem.querySelectorAll(".tweet-text");
     text = Array.from(text);
     var original = "", quoted = "";
@@ -23,16 +32,17 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
 
     var curr = {"original": original,
                 "quoted": quoted,
-                "date": 0,
+                "date": date,
                 "author": author,
                 "username": username,
                 "id": id};
     return curr;
   }
+
+
   /* Get Data */
   function getData (url) {
     var tweet = document.getElementsByClassName("tweet");
-    var date = document.getElementsByClassName("_timestamp"); // get tweet date-time
     var data = [];
     var size = tweet.length;
     var dataStorage = [];
@@ -95,6 +105,13 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
                   var curr = setProfile(tweet);
                   dataStorage.push(JSON.stringify(curr));
                   data.push(curr);
+                }
+                var removedNodes = mutationList[i].removedNodes;
+                for (var j=0; j<removedNodes.length; j++) {
+                  var tweet = removedNodes[j].children[0];
+                  var curr = setProfile(tweet);
+                  removeElement(dataStorage, JSON.stringify(curr));
+                  removeElement(data, curr);
                 }
               }
             }
