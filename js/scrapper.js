@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
     currentWindow: true
   }, function (tabs) {
     var currentTab = tabs[0];
-    var observing = false;
     document.getElementById("pageDescription").textContent += currentTab.url;
     preFill(currentTab.url);
     chrome.tabs.sendMessage(currentTab.id, {text: "observe", url: currentTab.url}, getDOMInfo);
