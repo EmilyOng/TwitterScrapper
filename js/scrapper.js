@@ -1,3 +1,4 @@
+/* FUNCTION: Fill table */
 function fillTable (DOMContent, parseJSON = false){
   var dataArea = document.getElementById("dataArea");
   dataArea.style.visibility = "visible";
@@ -8,48 +9,56 @@ function fillTable (DOMContent, parseJSON = false){
     if (parseJSON) {
       elem = JSON.parse(elem);
     }
-    var curr = {"original": elem["original"],
-                "quoted": elem["quoted"],
-                "date": elem["date"],
-                "author": elem["author"],
-                "username": elem["username"],
-                "id": elem["id"]};
-    var fields = ["original", "quoted", "date", "author", "username", "id"];
+    var profile = {"tweetText": elem["tweetText"],
+                "retweetedText": elem["retweetedText"],
+                "tweetDate": elem["tweetDate"],
+                "tweetAuthor": elem["tweetAuthor"],
+                "tweetHandle": elem["tweetHandle"],
+                "tweetId": elem["tweetId"]};
+    var fields = ["tweetText", "retweetedText", "tweetDate",
+                  "tweetAuthor", "tweetHandle", "tweetId"];
+
     var row = dataArea.insertRow(numberOfRows);
     numberOfRows += 1;
     for (var j=0; j<fields.length; j++){
-      row.insertCell(j).innerHTML = curr[fields[j]];
+      row.insertCell(j).innerHTML = profile[fields[j]];
     }
   }
 }
 
 
+/* FUNCTION: Receive data from message and call function to update table */
 function getDOMInfo (DOMContent) {
   if (DOMContent) {
     fillTable(DOMContent);
+    // Refresh the page to update changes
     location.reload();
   }
 }
 
 
-function preFill (url) {
-  url += "_TwitterScrapper_Tweets";
-  chrome.storage.local.get([url], function (result) {
-    if (result[url] != undefined) {
-      var data = JSON.parse(result[url]);
+/* FUNCTION: Prefill table */
+function preFill (storageKey) {
+  storageKey += "_TwitterScrapper_Tweets";
+  chrome.storage.local.get([storageKey], function (result) {
+    if (result[storageKey] != undefined) {
+      var data = JSON.parse(result[storageKey]);
       fillTable(data, true);
     }
   });
 }
 
+
+/* Wait for DOM to finish loading */
 document.addEventListener("DOMContentLoaded", () => {
   chrome.tabs.query({
     active: true,
     currentWindow: true
   }, function (tabs) {
     var currentTab = tabs[0];
+    // Set context and show current tab url
     document.getElementById("pageDescription").textContent += currentTab.url;
     preFill(currentTab.url);
-    chrome.tabs.sendMessage(currentTab.id, {text: "observe", url: currentTab.url}, getDOMInfo);
+    chrome.tabs.sendMessage(currentTab.id, {text: "observe", storageKey: currentTab.url}, getDOMInfo);
   });
 });
