@@ -1,5 +1,4 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
-
   /* FUNCTION: Await for processes to finish before continuing */
   function awaitData (sendData, tweetsData) {
     if (!sendData) {
@@ -92,9 +91,9 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
   }
 
 
-  var storageKey = msg.storageKey + "_TwitterScrapper_Tweets";
-  /* Respond to messages */
-  if (msg.text == "observe") {
+  /* FUNCTION: Observer process & mutation handling */
+  function observerProcess () {
+    var storageKey = msg.storageKey + "_TwitterScrapper_Tweets";
     var targetNode = document.getElementById("stream-items-id");
     chrome.storage.local.get([storageKey], function (result) {
       if (result[storageKey] == undefined) {
@@ -142,6 +141,19 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
         observer.observe(targetNode, mutationConfig);
       }
     });
+  }
+
+
+  /* Respond to messages */
+  if (msg.text == "observe") {
+    if (document.readyState !== "loading") {
+      observerProcess();
+    }
+    else {
+      document.addEventListener("DOMContentLoaded", () => {
+        observerProcess();
+      });
+    }
   }
   return true;
 });
