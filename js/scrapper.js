@@ -31,7 +31,7 @@ function fillTable (DOMContent, parseJSON = false){
 function getDOMInfo (DOMContent) {
   if (DOMContent) {
     fillTable(DOMContent);
-    // Refresh the page to update changes
+    // Refresh the table to update changes
     location.reload();
   }
 }
@@ -56,9 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentWindow: true
   }, function (tabs) {
     var currentTab = tabs[0];
-    // Set context and show current tab url
-    document.getElementById("pageDescription").textContent += currentTab.url;
+    document.getElementById("pageDescription").textContent = "Twitter Data from: " + currentTab.url;
     preFill(currentTab.url);
-    chrome.tabs.sendMessage(currentTab.id, {text: "observe", storageKey: currentTab.url}, getDOMInfo);
+    chrome.tabs.sendMessage(currentTab.id, {text: "observe", storageKey: currentTab.url}, getDOMInfo);  
   });
 });

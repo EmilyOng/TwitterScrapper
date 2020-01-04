@@ -12,6 +12,3 @@ It looks for the following fields in the DOM for a Tweet post:
 
 
 And pulls these relevant data into a HTML table.
-
-![Page](images/Page.png)
-![PageContinued](images/PageContinued.png)
